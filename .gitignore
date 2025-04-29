@@ -1,0 +1,60 @@
+# 編譯產生出來的資料夾（React、Angular）
+/build/
+/dist/
+/out-tsc/
+
+# 打包產生的檔案
+*.tar
+*.zip
+*.gz
+*.sql
+
+# node_modules 套件資料夾
+/node_modules/
+
+# 環境設定檔，不要上傳敏感資訊
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# log 檔案
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 作業系統產生的垃圾檔案
+.DS_Store
+Thumbs.db
+
+# IDE 編輯器產生的設定檔
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Storybook 產生的暫存資料
+out/
+
+# Coverage 測試覆蓋率報告
+/coverage/
+
+# 暫存檔
+*.tmp
+*.temp
+
+# Git LFS pointer files 如果有用到
+.gitattributes
+
+# 其他可能的輸出資料夾
+/.parcel-cache
+/.next
+/.cache
+
+# VS Code extensions設定
+.vscode/*.code-workspace
+.vscode/*.code-snippets

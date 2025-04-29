@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: md-backend
+    restart: always
+    ports:
+      - '5000:5000'
+    environment:
+      - DB_HOST=md-postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=Abcd1234
+      - DB_NAME=mdcollab
+      - JWT_SECRET=myverysecret123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/backup:/app/backup
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: md-frontend
+    restart: always
+    ports:
+      - '9987:3000'
+    depends_on:
+      - backend
+    environment:
+      - DOCKER=true
+
+  postgres:
+    image: postgres:15
+    container_name: md-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Abcd1234
+      POSTGRES_DB: mdcollab
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg-data:

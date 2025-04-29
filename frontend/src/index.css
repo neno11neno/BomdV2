@@ -1,0 +1,35 @@
+body {
+    margin: 0;
+}
+
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th,
+td {
+    border: 1px solid #fff;
+    padding: 8px;
+    text-align: left;
+}
+
+thead tr {
+    background-color: teal;
+}
+
+.icon-block {
+    position: relative;
+    bottom: 3px;
+}
+
+.token.heading {
+    color: #b388ff; /* 自訂紫色 */
+  }
+  .token.bold {
+    color: #ce93d8;
+  }
+  .token.italic {
+    color: #9575cd;
+  }
