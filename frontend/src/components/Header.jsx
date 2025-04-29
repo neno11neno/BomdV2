@@ -32,12 +32,6 @@ const Header = () => {
           <Typography variant="body1" sx={{ color: '#90caf9' }}>
             {user.email}
           </Typography>
-          <Button color="Secondary" variant="contained" onClick={homeback}>
-            Node
-          </Button>
-          <Button color="primary" variant="contained" onClick={bookmark}>
-            Bookmark
-          </Button>
           <Button color="error" variant="contained" onClick={handleLogout}>
             登出
           </Button>

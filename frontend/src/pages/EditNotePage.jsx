@@ -16,6 +16,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import axios from 'axios';
 import { sha256 } from 'js-sha256';
 import Editor from 'react-simple-code-editor';
@@ -293,8 +294,8 @@ const EditNotePage = () => {
         }}
         renderTags={(value, getTagProps) =>
           value.map((option, index) => {
-            const chipProps = getTagProps({ index });
-            return <Chip key={option || index} label={option} {...chipProps} />;
+            const { key, ...chipProps } = getTagProps({ index });
+            return <Chip key={key} label={option} {...chipProps} />;
           })
         }
         renderInput={(params) => (
@@ -342,7 +343,6 @@ const EditNotePage = () => {
               </div>
             </Box>
 
-            {/* 改成 react-simple-code-editor */}
             <Editor
               id="codeArea"
               value={content}
@@ -387,7 +387,10 @@ const EditNotePage = () => {
                 wordBreak: 'break-word',
               }}
             >
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+              >
                 {content}
               </ReactMarkdown>
             </Box>

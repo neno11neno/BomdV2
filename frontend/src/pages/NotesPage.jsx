@@ -193,7 +193,7 @@ const NotesPage = () => {
                     <CardMedia component="img" height="140" image={imageUrl} alt="Note preview" />
                   ) : (
                     <Box height="140px" sx={{ bgcolor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography color="text.secondary">無預覽圖片</Typography>
+                      <Typography sx={{ color: '#000000'}}>無預覽圖片</Typography>
                     </Box>
                   )}
 
