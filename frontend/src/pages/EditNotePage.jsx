@@ -1,28 +1,17 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  ToggleButton,
-  ToggleButtonGroup,
-  Stack,
-  Autocomplete,
-  Chip,
-  Tooltip,
-  IconButton
+  Container, TextField, Button, Typography, Box, ToggleButton,
+  ToggleButtonGroup, Stack, Autocomplete, Chip, Tooltip, IconButton
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { sha256 } from 'js-sha256';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import axios from 'axios';
-import { sha256 } from 'js-sha256';
-import Editor from 'react-simple-code-editor';
-import Prism from 'prismjs';
-import 'prismjs/themes/prism-tomorrow.css';
-import 'prismjs/components/prism-markdown';
+import CodeMirror from '@uiw/react-codemirror';
+import { markdown } from '@codemirror/lang-markdown';
+import { oneDark } from '@codemirror/theme-one-dark';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
@@ -44,13 +33,8 @@ const EditNotePage = () => {
   const [tags, setTags] = useState([]);
   const [allTags, setAllTags] = useState([]);
   const [mode, setMode] = useState('split');
-
-  const uploadedImages = new Map();
-
-  // 編輯器高亮
-  const highlightMarkdown = (code) => {
-    return Prism.highlight(code, Prism.languages.markdown, 'markdown');
-  };
+  const editorRef = useRef(null);
+  const uploadedImages = useRef(new Map());
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -60,7 +44,6 @@ const EditNotePage = () => {
       return;
     }
 
-    // 載入草稿
     const savedDraft = localStorage.getItem(`draft_${id || 'new'}`);
     if (savedDraft) {
       const draftData = JSON.parse(savedDraft);
@@ -90,7 +73,7 @@ const EditNotePage = () => {
         setAllTags(cleanTags);
       } catch (err) {
         alert('載入資料失敗');
-        console.error('❌ 載入失敗:', err);
+        console.error(err);
         navigate('/notes');
       }
     };
@@ -107,36 +90,23 @@ const EditNotePage = () => {
       };
       localStorage.setItem(`draft_${id || 'new'}`, JSON.stringify(draft));
     }, 500);
-
     return () => clearTimeout(timer);
   }, [title, content, tags, id]);
 
   const insertAtCursor = (template, wrapper = false) => {
-    const textarea = document.getElementById('codeArea');
-    if (!textarea) return;
+    const view = editorRef.current?.view;
+    if (!view) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = content.substring(start, end);
+    const state = view.state;
+    const { from, to } = state.selection.main;
+    const selected = state.doc.sliceString(from, to);
+    let insertText = wrapper && selected ? template.replace(/\$text/g, selected) : template.replace(/\$text/g, '');
 
-    let insertText = '';
-    if (wrapper && selected) {
-      insertText = template.replace(/\$text/g, selected);
-    } else {
-      insertText = template.replace(/\$text/g, '');
-    }
-
-    const before = content.substring(0, start);
-    const after = content.substring(end);
-    const newContent = before + insertText + after;
-
-    setContent(newContent);
-
-    setTimeout(() => {
-      textarea.focus();
-      const cursorPos = start + insertText.length;
-      textarea.selectionStart = textarea.selectionEnd = cursorPos;
-    }, 0);
+    view.dispatch({
+      changes: { from, to, insert: insertText },
+      selection: { anchor: from + insertText.length },
+    });
+    view.focus();
   };
 
   const calculateFileHash = async (file) => {
@@ -151,14 +121,11 @@ const EditNotePage = () => {
 
   const uploadImageIfNeeded = async (file) => {
     const hash = await calculateFileHash(file);
-    if (uploadedImages.has(hash)) {
-      return uploadedImages.get(hash);
-    }
+    if (uploadedImages.current.has(hash)) return uploadedImages.current.get(hash);
 
     const formData = new FormData();
     formData.append('image', file);
     const token = localStorage.getItem('token');
-
     const res = await axios.post('/api/upload', formData, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -167,7 +134,7 @@ const EditNotePage = () => {
     });
 
     const imageUrl = res.data.url;
-    uploadedImages.set(hash, imageUrl);
+    uploadedImages.current.set(hash, imageUrl);
     return imageUrl;
   };
 
@@ -175,7 +142,6 @@ const EditNotePage = () => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (!file || !file.type.startsWith('image/')) return;
-
     try {
       const imageUrl = await uploadImageIfNeeded(file);
       insertAtCursor(`\n\n![](${imageUrl})\n\n`);
@@ -185,8 +151,6 @@ const EditNotePage = () => {
     }
   };
 
-  const handleDragOver = (e) => e.preventDefault();
-
   const handlePasteImage = async (e) => {
     const items = e.clipboardData.items;
     if (!items) return;
@@ -195,13 +159,12 @@ const EditNotePage = () => {
       if (item.type.indexOf('image') === 0) {
         const file = item.getAsFile();
         if (!file) continue;
-
         try {
           const imageUrl = await uploadImageIfNeeded(file);
           insertAtCursor(`\n\n![](${imageUrl})\n\n`);
         } catch (err) {
           alert('圖片貼上失敗');
-          console.error('❌ 貼圖錯誤:', err);
+          console.error(err);
         }
       }
     }
@@ -210,7 +173,6 @@ const EditNotePage = () => {
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     try {
       const imageUrl = await uploadImageIfNeeded(file);
       insertAtCursor(`\n\n![](${imageUrl})\n\n`);
@@ -225,7 +187,6 @@ const EditNotePage = () => {
     if (!token) return;
 
     const data = { title, content, tags };
-
     try {
       if (isNew) {
         await axios.post('/api/notes', data, {
@@ -236,7 +197,6 @@ const EditNotePage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      // 儲存成功後清除草稿
       localStorage.removeItem(`draft_${id || 'new'}`);
       navigate('/notes');
     } catch (err) {
@@ -248,9 +208,7 @@ const EditNotePage = () => {
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 6 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" color="white">
-          {isNew ? '新增筆記' : '編輯筆記'}
-        </Typography>
+        <Typography variant="h5" color="white">{isNew ? '新增筆記' : '編輯筆記'}</Typography>
         <Stack direction="row" spacing={2}>
           <ToggleButtonGroup
             value={mode}
@@ -263,9 +221,7 @@ const EditNotePage = () => {
             <ToggleButton value="preview">預覽</ToggleButton>
             <ToggleButton value="split">編輯＋預覽</ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" color="success" onClick={handleSave}>
-            💾 儲存
-          </Button>
+          <Button variant="contained" color="success" onClick={handleSave}>💾 儲存</Button>
         </Stack>
       </Stack>
 
@@ -286,17 +242,11 @@ const EditNotePage = () => {
         options={allTags}
         value={tags}
         getOptionLabel={(option) => (typeof option === 'string' ? option : '')}
-        onChange={(e, value) => {
-          const filtered = value
-            .map((tag) => tag.trim())
-            .filter((tag) => tag !== '');
-          setTags(filtered);
-        }}
+        onChange={(e, value) => setTags(value.map(tag => tag.trim()).filter(Boolean))}
         renderTags={(value, getTagProps) =>
-          value.map((option, index) => {
-            const { key, ...chipProps } = getTagProps({ index });
-            return <Chip key={key} label={option} {...chipProps} />;
-          })
+          value.map((option, index) => (
+            <Chip key={index} label={option} {...getTagProps({ index })} />
+          ))
         }
         renderInput={(params) => (
           <TextField
@@ -304,12 +254,9 @@ const EditNotePage = () => {
             label="標籤"
             variant="outlined"
             placeholder="輸入標籤後按 Enter"
-            InputProps={{
-              ...params.InputProps,
-              style: { color: '#fff' },
-            }}
-            InputLabelProps={{ style: { color: '#ccc' } }}
             sx={{ mb: 2 }}
+            InputProps={{ ...params.InputProps, style: { color: '#fff' } }}
+            InputLabelProps={{ style: { color: '#ccc' } }}
           />
         )}
       />
@@ -325,75 +272,39 @@ const EditNotePage = () => {
         {(mode === 'edit' || mode === 'split') && (
           <Box sx={{ flex: 1 }}>
             <Box sx={{ mb: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Typography variant="subtitle1" color="gray" gutterBottom>
-                內容 (Markdown)
-              </Typography>
-              <div className='icon-block'>
-                {/* Icon群 */}
-                <Tooltip title="粗體 (Ctrl+B)"><IconButton size="small" onClick={() => insertAtCursor('**$text**', true)} color="primary"><FormatBoldIcon /></IconButton></Tooltip>
-                <Tooltip title="斜體 (Ctrl+I)"><IconButton size="small" onClick={() => insertAtCursor('_$text_', true)} color="primary"><FormatItalicIcon /></IconButton></Tooltip>
-                <Tooltip title="插入連結"><IconButton size="small" onClick={() => insertAtCursor('[連結文字](https://)', true)} color="primary"><InsertLinkIcon /></IconButton></Tooltip>
-                <Tooltip title="插入圖片"><IconButton size="small" onClick={() => insertAtCursor('![]()', false)} color="primary"><ImageIcon /></IconButton></Tooltip>
-                <Tooltip title="清單項目"><IconButton size="small" onClick={() => insertAtCursor('- ', false)} color="primary"><FormatListBulletedIcon /></IconButton></Tooltip>
-                <Tooltip title="程式碼區塊"><IconButton size="small" onClick={() => insertAtCursor('```js\n$text\n```', true)} color="primary"><CodeIcon /></IconButton></Tooltip>
-                <Tooltip title="引用文字"><IconButton size="small" onClick={() => insertAtCursor('> $text', true)} color="primary"><FormatQuoteIcon /></IconButton></Tooltip>
-                <Tooltip title="分隔線"><IconButton size="small" onClick={() => insertAtCursor('---', false)} color="primary"><HorizontalRuleIcon /></IconButton></Tooltip>
-                <Tooltip title="表格模板"><IconButton size="small" onClick={() => insertAtCursor('| Header 1 | Header 2 |\n| -------- | -------- |\n| Data 1  | Data 2  |')} color="primary"><TableChartIcon /></IconButton></Tooltip>
-                <Tooltip title="插入日期"><IconButton size="small" onClick={() => insertAtCursor(new Date().toLocaleDateString())} color="primary"><EventIcon /></IconButton></Tooltip>
-              </div>
+              <Tooltip title="粗體"><IconButton onClick={() => insertAtCursor('**$text**', true)}><FormatBoldIcon /></IconButton></Tooltip>
+              <Tooltip title="斜體"><IconButton onClick={() => insertAtCursor('_$text_', true)}><FormatItalicIcon /></IconButton></Tooltip>
+              <Tooltip title="連結"><IconButton onClick={() => insertAtCursor('[連結文字](https://)', true)}><InsertLinkIcon /></IconButton></Tooltip>
+              <Tooltip title="圖片"><IconButton onClick={() => insertAtCursor('![]()', false)}><ImageIcon /></IconButton></Tooltip>
+              <Tooltip title="清單"><IconButton onClick={() => insertAtCursor('- ', false)}><FormatListBulletedIcon /></IconButton></Tooltip>
+              <Tooltip title="程式碼區塊"><IconButton onClick={() => insertAtCursor('```js\n$text\n```', true)}><CodeIcon /></IconButton></Tooltip>
+              <Tooltip title="引用"><IconButton onClick={() => insertAtCursor('> $text', true)}><FormatQuoteIcon /></IconButton></Tooltip>
+              <Tooltip title="分隔線"><IconButton onClick={() => insertAtCursor('---', false)}><HorizontalRuleIcon /></IconButton></Tooltip>
+              <Tooltip title="表格"><IconButton onClick={() => insertAtCursor('| Header 1 | Header 2 |\n| -------- | -------- |\n| Data 1 | Data 2 |')}><TableChartIcon /></IconButton></Tooltip>
+              <Tooltip title="插入日期"><IconButton onClick={() => insertAtCursor(new Date().toLocaleDateString())}><EventIcon /></IconButton></Tooltip>
             </Box>
 
-            <Editor
-              id="codeArea"
+            <CodeMirror
+              ref={editorRef}
               value={content}
-              onValueChange={(code) => setContent(code)}
-              highlight={highlightMarkdown}
-              padding={16}
+              height="400px"
+              theme={oneDark}
+              extensions={[markdown()]}
+              onChange={(value) => setContent(value)}
               onDrop={handleDrop}
-              onDragOver={handleDragOver}
               onPaste={handlePasteImage}
-              style={{
-                width: '100%',
-                backgroundColor: '#121212',
-                border: '1px solid #555',
-                borderRadius: '4px',
-                fontSize: '1rem',
-                color: '#fff',
-                fontFamily: 'inherit',
-                minHeight: '400px',
-                marginBottom: '32px',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word'
-              }}
             />
           </Box>
         )}
 
         {(mode === 'preview' || mode === 'split') && (
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, backgroundColor: '#1e1e1e', padding: 2, borderRadius: 2, color: 'white' }}>
             <Typography variant="subtitle1" color="gray" gutterBottom>
               預覽
             </Typography>
-            <Box
-              sx={{
-                bgcolor: '#1e1e1e',
-                border: '1px solid #444',
-                borderRadius: 2,
-                padding: 2,
-                minHeight: '400px',
-                width: '100%',
-                marginBottom: '32px',
-                color: 'white',
-                wordBreak: 'break-word',
-              }}
-            >
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw]}
-              >
-                {content}
-              </ReactMarkdown>
-            </Box>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+              {content}
+            </ReactMarkdown>
           </Box>
         )}
       </Box>

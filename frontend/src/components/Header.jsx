@@ -15,10 +15,6 @@ const Header = () => {
     navigate('/notes');
   };
 
-  const bookmark = () => {
-    navigate('/link');
-  };
-
 
   if (!user) return null;
 
