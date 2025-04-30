@@ -12,6 +12,7 @@ const authRoute = require('./routes/auth');
 const notesRoute = require('./routes/notes');
 const tagsRoute = require('./routes/tags');
 const uploadRoute = require('./routes/upload');
+const chatRoute = require('./routes/chat');
 const verifyToken = require('./middleware/verifyToken');
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -24,6 +25,7 @@ app.use('/api/upload', uploadRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/notes', verifyToken, notesRoute);
 app.use('/api/tags', tagsRoute);
+app.use('/api/chat', chatRoute);
 
 const startApp = async () => {
   let retries = 10;

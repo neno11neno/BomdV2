@@ -6,6 +6,7 @@ import EditNotePage from './pages/EditNotePage';
 import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import LinkPage from './pages/LinkPage';
+import ChatPage from './pages/ChatPage';
 import Header from './components/Header';
 
 // 黑色主題
@@ -62,6 +63,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <LinkPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="chat"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ChatPage />
                 </Layout>
               </ProtectedRoute>
             }
