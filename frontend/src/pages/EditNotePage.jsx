@@ -22,6 +22,8 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule';
 import EventIcon from '@mui/icons-material/Event';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import { EditorView } from '@codemirror/view';
+
 
 const EditNotePage = () => {
   const { id } = useParams();
@@ -268,7 +270,10 @@ const EditNotePage = () => {
         <input type="file" accept="image/*" onChange={handleUploadImage} />
       </Box>
 
-      <Box sx={{ display: 'flex', flexDirection: mode === 'split' ? 'row' : 'column', gap: 2 }}>
+      <Box sx={{
+        display: 'flex', flexDirection: mode === 'split' ? 'row' : 'column', gap: 2, whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word'
+      }}>
         {(mode === 'edit' || mode === 'split') && (
           <Box sx={{ flex: 1 }}>
             <Box sx={{ mb: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -287,12 +292,17 @@ const EditNotePage = () => {
             <CodeMirror
               ref={editorRef}
               value={content}
-              height="400px"
+              height="100%"
               theme={oneDark}
-              extensions={[markdown()]}
+              extensions={[markdown(), EditorView.lineWrapping,]}
               onChange={(value) => setContent(value)}
               onDrop={handleDrop}
               onPaste={handlePasteImage}
+              style={{
+                width: '100%',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+              }}
             />
           </Box>
         )}
