@@ -32,7 +32,7 @@ const ChatPage = () => {
     <Container maxWidth="md">
       <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="h4" gutterBottom>
-          離線問答系統
+          阿拉丁世界
         </Typography>
 
         <TextField
@@ -57,7 +57,7 @@ const ChatPage = () => {
 
         <Paper elevation={3} sx={{ p: 2, minHeight: '100px' }}>
           <Typography variant="subtitle1" color="text.secondary">
-            AI 回覆：
+            神燈精靈回覆：
           </Typography>
           {loading ? (
             <Box sx={{ mt: 1 }}>
