@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Container, TextField, Button, Typography, Box, ToggleButton,
-  ToggleButtonGroup, Stack, Autocomplete, Chip, Tooltip, IconButton
+  ToggleButtonGroup, Stack, Autocomplete, Chip, Tooltip, IconButton, Switch
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -36,6 +36,7 @@ const EditNotePage = () => {
   const [allTags, setAllTags] = useState([]);
   const [mode, setMode] = useState('split');
   const editorRef = useRef(null);
+  const [isPrivate, setIsPrivate] = useState(false);
   const uploadedImages = useRef(new Map());
 
   useEffect(() => {
@@ -52,6 +53,7 @@ const EditNotePage = () => {
       setTitle(draftData.title || '');
       setContent(draftData.content || '');
       setTags(draftData.tags || []);
+      setIsPrivate(note.isPrivate || false);
     }
 
     const fetchNoteAndTags = async () => {
@@ -188,7 +190,7 @@ const EditNotePage = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const data = { title, content, tags };
+    const data = { title, content, tags, isPrivate };
     try {
       if (isNew) {
         await axios.post('/api/notes', data, {
@@ -262,6 +264,17 @@ const EditNotePage = () => {
           />
         )}
       />
+
+      <Box sx={{ mb: 2 }}>
+        <Typography color="gray" gutterBottom>
+          設為私人
+        </Typography>
+        <Switch
+          checked={isPrivate}
+          onChange={(e) => setIsPrivate(e.target.checked)}
+          color="primary"
+        />
+      </Box>
 
       <Box sx={{ mb: 2 }}>
         <Typography color="gray" gutterBottom>

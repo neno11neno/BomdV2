@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
     image: {
       type: DataTypes.STRING,
     },
+    isPrivate: { // 新增 isPrivate 屬性
+      type: DataTypes.BOOLEAN,
+      defaultValue: false, // 預設為公開
+    },
   });
 
   return Note;

@@ -33,7 +33,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const NotesPage = () => {
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState(null);
   const [filteredNotes, setFilteredNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
@@ -42,6 +42,7 @@ const NotesPage = () => {
   const [viewMode, setViewMode] = useState('card');
   const [allTags, setAllTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState('');
+  const [isPrivateFilter, setIsPrivateFilter] = useState(''); // 用來篩選是否私人筆記
 
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -85,6 +86,10 @@ const NotesPage = () => {
       results = results.filter(note => note.tags?.includes(selectedTag));
     }
 
+    if (isPrivateFilter !== '') {
+      results = results.filter(note => note.isPrivate === (isPrivateFilter === 'private'));
+    }
+
     results.sort((a, b) => {
       const timeA = new Date(a.createdAt).getTime();
       const timeB = new Date(b.createdAt).getTime();
@@ -92,7 +97,7 @@ const NotesPage = () => {
     });
 
     setFilteredNotes(results);
-  }, [searchText, sortOrder, selectedTag, notes]);
+  }, [searchText, sortOrder, selectedTag, isPrivateFilter, notes]);
 
   const handleNewNote = () => navigate('/notes/new');
   const handleOpenNote = (id) => navigate(`/notes/${id}`);
@@ -165,6 +170,18 @@ const NotesPage = () => {
           {allTags.map((tag) => (
             <MenuItem key={tag} value={tag}>{tag}</MenuItem>
           ))}
+        </TextField>
+
+        <TextField
+          select
+          label="依私人篩選"
+          value={isPrivateFilter}
+          onChange={(e) => setIsPrivateFilter(e.target.value)}
+          sx={{ width: 160 }}
+        >
+          <MenuItem value="">全部</MenuItem>
+          <MenuItem value="private">私人</MenuItem>
+          <MenuItem value="public">公開</MenuItem>
         </TextField>
       </Stack>
 
@@ -256,6 +273,8 @@ const NotesPage = () => {
                         ))}
                       </Stack>
                     )}
+
+                    <Chip label={note.isPrivate ? '私人' : '公開'} color={note.isPrivate ? 'error' : 'success'} size="small" sx={{ mt: 1 }} />
                   </CardContent>
                 </Card>
               </Grid>
@@ -273,8 +292,7 @@ const NotesPage = () => {
                 <IconButton edge="end" onClick={(e) => {
                   e.stopPropagation();
                   setDeleteId(note.id);
-                }}
-                >
+                }}>
                   <DeleteIcon />
                 </IconButton>
               }
@@ -289,6 +307,8 @@ const NotesPage = () => {
                     👤 {note.User?.email || '未知'}｜🕒 {new Date(note.createdAt).toLocaleString()}
                     <br />
                     {note.content.replace(/!\[.*?\]\(.*?\)/g, '').slice(0, 100)}...
+                    <br />
+                    <Chip label={note.isPrivate ? '私人' : '公開'} color={note.isPrivate ? 'error' : 'success'} size="small" />
                   </>
                 }
               />
