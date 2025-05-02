@@ -23,6 +23,7 @@ import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule';
 import EventIcon from '@mui/icons-material/Event';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import { EditorView } from '@codemirror/view';
+import remarkBreaks from 'remark-breaks';
 
 
 const EditNotePage = () => {
@@ -271,11 +272,10 @@ const EditNotePage = () => {
       </Box>
 
       <Box sx={{
-        display: 'flex', flexDirection: mode === 'split' ? 'row' : 'column', gap: 2, whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word'
+        display: 'flex', flexDirection: mode === 'split' ? 'row' : 'column'
       }}>
         {(mode === 'edit' || mode === 'split') && (
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, maxWidth: '100%' }}>
             <Box sx={{ mb: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Tooltip title="粗體"><IconButton onClick={() => insertAtCursor('**$text**', true)}><FormatBoldIcon /></IconButton></Tooltip>
               <Tooltip title="斜體"><IconButton onClick={() => insertAtCursor('_$text_', true)}><FormatItalicIcon /></IconButton></Tooltip>
@@ -292,7 +292,7 @@ const EditNotePage = () => {
             <CodeMirror
               ref={editorRef}
               value={content}
-              height="100%"
+              minHeight="700px"
               theme={oneDark}
               extensions={[markdown(), EditorView.lineWrapping,]}
               onChange={(value) => setContent(value)}
@@ -302,17 +302,29 @@ const EditNotePage = () => {
                 width: '100%',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
+                overflowWrap: 'break-word',
               }}
             />
           </Box>
         )}
 
         {(mode === 'preview' || mode === 'split') && (
-          <Box sx={{ flex: 1, backgroundColor: '#1e1e1e', padding: 2, borderRadius: 2, color: 'white' }}>
+          <Box sx={{
+            flex: 1, backgroundColor: '#1e1e1e', padding: 2, borderRadius: 2, color: 'white', overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
+          }}>
             <Typography variant="subtitle1" color="gray" gutterBottom>
               預覽
             </Typography>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, remarkBreaks]} components={{
+              img: ({ ...props }) => (
+                <img
+                  style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
+                  {...props}
+                />
+              ),
+            }}>
               {content}
             </ReactMarkdown>
           </Box>
