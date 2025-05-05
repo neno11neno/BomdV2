@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-// 初始化 Sequelize
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
@@ -13,20 +12,21 @@ const sequelize = new Sequelize(
   }
 );
 
-// 初始化 model
 const User = require('./User')(sequelize, DataTypes);
 const Note = require('./Note')(sequelize, DataTypes);
-const Tag = require('./Tag')(sequelize, DataTypes);
+const Group = require('./Group')(sequelize, DataTypes);
 
 // 設定關聯
 User.hasMany(Note, { foreignKey: 'userId' });
 Note.belongsTo(User, { foreignKey: 'userId' });
 
-// 匯出
+Group.hasMany(User, { foreignKey: 'groupId' });
+User.belongsTo(Group, { foreignKey: 'groupId' });
+
 module.exports = {
   sequelize,
   Sequelize,
   User,
   Note,
-  Tag,
+  Group,
 };

@@ -7,6 +7,10 @@ import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import LinkPage from './pages/LinkPage';
 import Header from './components/Header';
+import PrivateRoute from './components/PrivateRoute';
+import GroupManagement from './pages/GroupManagement';
+import './App.css';
+
 
 // 黑色主題
 const darkTheme = createTheme({
@@ -36,6 +40,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/groups"
+            element={
+              <PrivateRoute isAdmin={true}>
+                <GroupManagement />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/notes"
             element={

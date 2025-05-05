@@ -9,7 +9,7 @@ const router = express.Router();
 
 // 註冊
 router.post('/register', async (req, res) => {
-  const { email, password, isAdmin = false } = req.body;
+  const { email, password, isAdmin = false, groupId = null } = req.body;
   if (!email || !password) return res.status(400).json({ message: '缺少帳號或密碼' });
 
   try {
@@ -17,7 +17,7 @@ router.post('/register', async (req, res) => {
     if (exist) return res.status(409).json({ message: '帳號已存在' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashedPassword, isAdmin });
+    const user = await User.create({ email, password: hashedPassword, isAdmin, groupId });
     res.status(201).json({ message: '註冊成功' });
   } catch (err) {
     console.error('❌ 註冊失敗:', err);

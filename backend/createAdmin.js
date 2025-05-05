@@ -9,7 +9,7 @@ const createAdmin = async () => {
   if (exists) return;
 
   const hashed = await bcrypt.hash(password, 10);
-  await User.create({ email, password: hashed });
+  await User.create({ email, password: hashed, isAdmin: true });
   console.log('✅ 初始管理員帳號已建立');
 };
 
