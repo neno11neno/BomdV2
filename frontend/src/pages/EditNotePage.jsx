@@ -24,6 +24,12 @@ import EventIcon from '@mui/icons-material/Event';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import { EditorView } from '@codemirror/view';
 import remarkBreaks from 'remark-breaks';
+import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import MarkdownIcon from '@mui/icons-material/Note';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 
 const EditNotePage = () => {
@@ -38,6 +44,7 @@ const EditNotePage = () => {
   const [mode, setMode] = useState('split');
   const editorRef = useRef(null);
   const uploadedImages = useRef(new Map());
+  const previewRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -95,6 +102,37 @@ const EditNotePage = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [title, content, tags, id]);
+
+  const downloadMarkdown = () => {
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${title || 'note'}.md`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadPdf = async () => {
+    if (!previewRef.current) return;
+
+    const canvas = await html2canvas(previewRef.current, {
+      scale: 2, // 提高清晰度
+      backgroundColor: '#1e1e1e', // 預覽背景
+    });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [canvas.width, canvas.height],
+    });
+
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.save(`${title || 'note'}.pdf`);
+  };
+
 
   const insertAtCursor = (template, wrapper = false) => {
     const view = editorRef.current?.view;
@@ -317,19 +355,57 @@ const EditNotePage = () => {
             <Typography variant="subtitle1" color="gray" gutterBottom>
               預覽
             </Typography>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, remarkBreaks]} components={{
-              img: ({ ...props }) => (
-                <img
-                  style={{ maxWidth: '100%', height: 'auto', borderRadius: '4px' }}
-                  {...props}
-                />
-              ),
-            }}>
-              {content}
-            </ReactMarkdown>
+            <div ref={previewRef}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, remarkBreaks]}
+                components={{
+                  img: ({ ...props }) => (
+                    <img
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                        borderRadius: '4px',
+                        transition: 'transform 0.3s ease',
+                        cursor: 'zoom-in',
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.5)';
+                        e.currentTarget.style.zIndex = '10';
+                        e.currentTarget.style.position = 'relative';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                        e.currentTarget.style.zIndex = '0';
+                      }}
+                      {...props}
+                    />
+                  ),
+                }}
+              >
+                {content}
+              </ReactMarkdown>
+            </div>
           </Box>
         )}
       </Box>
+      <SpeedDial
+        ariaLabel="下載選項"
+        sx={{ position: 'fixed', bottom: 32, right: 32 }}
+        icon={<SpeedDialIcon icon={<FileDownloadIcon />} />}
+      >
+        <SpeedDialAction
+          icon={<MarkdownIcon />}
+          tooltipTitle="下載 Markdown"
+          onClick={downloadMarkdown}
+        />
+        <SpeedDialAction
+          icon={<PictureAsPdfIcon />}
+          tooltipTitle="下載 PDF"
+          onClick={downloadPdf}
+        />
+      </SpeedDial>
+
     </Container>
   );
 };
