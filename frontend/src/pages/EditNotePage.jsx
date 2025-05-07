@@ -1,17 +1,29 @@
+// 📦 React 與基本函式庫
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom'; // 路由參數與導頁
+import axios from 'axios';                                 // HTTP 請求工具
+import { sha256 } from 'js-sha256';                        // SHA-256 加密
+
+// 🧱 MUI 元件庫：常用 UI 元件
 import {
-  Container, TextField, Button, Typography, Box, ToggleButton,
-  ToggleButtonGroup, Stack, Autocomplete, Chip, Tooltip, IconButton
+  Container, TextField, Button, Typography, Box,
+  ToggleButton, ToggleButtonGroup, Stack, Autocomplete,
+  Chip, Tooltip, IconButton
 } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { sha256 } from 'js-sha256';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
+
+// 🧾 Markdown 解析與支援套件
+import ReactMarkdown from 'react-markdown';   // 渲染 Markdown
+import remarkGfm from 'remark-gfm';           // 支援 GFM 語法
+import rehypeRaw from 'rehype-raw';           // 支援 raw HTML
+import remarkBreaks from 'remark-breaks';     // 換行支援
+
+// ✏️ CodeMirror 編輯器與主題
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView } from '@codemirror/view';
+
+// 🛠️ Markdown 工具列圖示
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
@@ -22,14 +34,21 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule';
 import EventIcon from '@mui/icons-material/Event';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import { EditorView } from '@codemirror/view';
-import remarkBreaks from 'remark-breaks';
+import CopyAllIcon from '@mui/icons-material/CopyAll';
+
+// ⚙️ 快速操作選單（SpeedDial）
 import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import MarkdownIcon from '@mui/icons-material/Note';
+
+// 📄 HTML 匯出為圖片/PDF
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+
+// 📦 自訂套件
+import CodeBlock from '../components/CodeBlock'; 
+
 
 
 const EditNotePage = () => {
@@ -338,7 +357,6 @@ const EditNotePage = () => {
               onPaste={handlePasteImage}
               style={{
                 width: '100%',
-                whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
                 overflowWrap: 'break-word',
               }}
@@ -349,16 +367,14 @@ const EditNotePage = () => {
         {(mode === 'preview' || mode === 'split') && (
           <Box sx={{
             flex: 1, backgroundColor: '#1e1e1e', padding: 2, borderRadius: 2, color: 'white', overflowWrap: 'break-word',
-            wordBreak: 'break-word',
-            whiteSpace: 'pre-wrap',
           }}>
             <Typography variant="subtitle1" color="gray" gutterBottom>
               預覽
             </Typography>
             <div ref={previewRef}>
               <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, remarkBreaks]}
+                remarkPlugins={[remarkGfm, remarkBreaks]}
+                rehypePlugins={[rehypeRaw]}
                 components={{
                   img: ({ ...props }) => (
                     <img
@@ -381,10 +397,12 @@ const EditNotePage = () => {
                       {...props}
                     />
                   ),
+                  code: CodeBlock,
                 }}
               >
                 {content}
               </ReactMarkdown>
+
             </div>
           </Box>
         )}
