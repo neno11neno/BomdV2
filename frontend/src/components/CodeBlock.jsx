@@ -1,4 +1,3 @@
-// components/CodeBlock.jsx
 import React, { useState } from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import CopyAllIcon from '@mui/icons-material/CopyAll';
