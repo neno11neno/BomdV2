@@ -43,49 +43,49 @@ const linkData = [
             { name: 'DynaShield XCNB', url: 'https://172.22.11.84/XCNB/LoginTest.jsp' },
         ],
     },
-    {
-        category: 'Always use',
-        links: [
-            { name: '公文系統Testing', url: 'http://10.16.22.196/idie/' },
-            { name: 'MonitorSP Prime(舊)', url: 'http://210.61.159.9/MSP/' },
-            { name: 'MonitorSP Prime(新)', url: ' http://210.61.159.77/MSP/' },
-            { name: 'TBB防毒專區', url: ' http://10.10.15.168/#PageTop' },
-            { name: 'Checkmarx企業版(新版52)', url: 'https://172.21.11.52/cxwebclient/' },
-            { name: 'Checkmarx企業版(新版34)', url: ' http://10.16.22.34/cxwebclient/' },
-            { name: '文件管理系統', url: 'http://idie.tbb.com.tw/idie/' },
-            { name: '臺灣企銀官網', url: 'http://www.tbb.com.tw/' },
-            { name: '數位學習網', url: 'http://elearning.tbb.com.tw/' },
-            { name: '個人網路銀行', url: 'https://ebank.tbb.com.tw/nb3/login' },
-        ],
-    },
-    {
-        category: 'Production',
-        links: [
-            { name: 'i-Security 系統管理', url: 'http://10.16.21.31/CMS/adm/index.jsp' },
-            { name: 'Portal(客戶)', url: 'https://portal.tbb.com.tw/tbbportal/CustomerLogin.jsp' },
-            { name: 'Portal(行員)', url: 'https://eportal.tbb.com.tw/tbbeportal/EmployeeLogin.jsp' },
-            { name: '臺灣企銀-入口網站', url: 'https://eportal.tbb.com.tw/tbbeportal/web.html' },
-            { name: 'wAF_ACTIVE', url: 'https://10.15.10.244/tmui/login.jsp' },
-            { name: 'WAF_STANDBY', url: 'https://10.15.10.243/tmui/login.jsp' },
-            { name: '最高權限(簽AD)', url: 'https://eadm.tbb.com.tw/EADM/Logon.aspx' },
-            { name: 'N-Reporter管理介面', url: 'https://10.10.15.241/' },
-        ],
-    },
-    {
-        category: 'Tool',
-        links: [
-            { name: 'Unicode字元轉換', url: 'https://www.ifreesite.com/unicode-ascii-ansi.htm' },
-            { name: 'Linux鳥哥的學習私房手冊', url: 'http://linux.vbird.org/' },
-        ],
-    },
-    {
-        category: 'WebMail',
-        links: [
-            { name: 'Mail2000', url: 'https://mail.tbb.com.tw/index.html' },
-            { name: 'Spam SQR', url: 'http://spam.tbb.com.tw/snspam/spam_request/' },
-            { name: 'BIG-IPR - bigip.asm.test.tbb (127.0.0.1)', url: 'https://10.16.22.35/tmui/login.jsp' },
-        ],
-    },
+    // {
+    //     category: 'Always use',
+    //     links: [
+    //         { name: '公文系統Testing', url: 'http://10.16.22.196/idie/' },
+    //         { name: 'MonitorSP Prime(舊)', url: 'http://210.61.159.9/MSP/' },
+    //         { name: 'MonitorSP Prime(新)', url: ' http://210.61.159.77/MSP/' },
+    //         { name: 'TBB防毒專區', url: ' http://10.10.15.168/#PageTop' },
+    //         { name: 'Checkmarx企業版(新版52)', url: 'https://172.21.11.52/cxwebclient/' },
+    //         { name: 'Checkmarx企業版(新版34)', url: ' http://10.16.22.34/cxwebclient/' },
+    //         { name: '文件管理系統', url: 'http://idie.tbb.com.tw/idie/' },
+    //         { name: '臺灣企銀官網', url: 'http://www.tbb.com.tw/' },
+    //         { name: '數位學習網', url: 'http://elearning.tbb.com.tw/' },
+    //         { name: '個人網路銀行', url: 'https://ebank.tbb.com.tw/nb3/login' },
+    //     ],
+    // },
+    // {
+    //     category: 'Production',
+    //     links: [
+    //         { name: 'i-Security 系統管理', url: 'http://10.16.21.31/CMS/adm/index.jsp' },
+    //         { name: 'Portal(客戶)', url: 'https://portal.tbb.com.tw/tbbportal/CustomerLogin.jsp' },
+    //         { name: 'Portal(行員)', url: 'https://eportal.tbb.com.tw/tbbeportal/EmployeeLogin.jsp' },
+    //         { name: '臺灣企銀-入口網站', url: 'https://eportal.tbb.com.tw/tbbeportal/web.html' },
+    //         { name: 'wAF_ACTIVE', url: 'https://10.15.10.244/tmui/login.jsp' },
+    //         { name: 'WAF_STANDBY', url: 'https://10.15.10.243/tmui/login.jsp' },
+    //         { name: '最高權限(簽AD)', url: 'https://eadm.tbb.com.tw/EADM/Logon.aspx' },
+    //         { name: 'N-Reporter管理介面', url: 'https://10.10.15.241/' },
+    //     ],
+    // },
+    // {
+    //     category: 'Tool',
+    //     links: [
+    //         { name: 'Unicode字元轉換', url: 'https://www.ifreesite.com/unicode-ascii-ansi.htm' },
+    //         { name: 'Linux鳥哥的學習私房手冊', url: 'http://linux.vbird.org/' },
+    //     ],
+    // },
+    // {
+    //     category: 'WebMail',
+    //     links: [
+    //         { name: 'Mail2000', url: 'https://mail.tbb.com.tw/index.html' },
+    //         { name: 'Spam SQR', url: 'http://spam.tbb.com.tw/snspam/spam_request/' },
+    //         { name: 'BIG-IPR - bigip.asm.test.tbb (127.0.0.1)', url: 'https://10.16.22.35/tmui/login.jsp' },
+    //     ],
+    // },
 ];
 const LinkDirectory = () => {
     const [searchText, setSearchText] = useState('');

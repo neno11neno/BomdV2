@@ -1,10 +1,7 @@
-// 📦 React 與基本函式庫
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { sha256 } from 'js-sha256';
-
-// 🧱 MUI 元件與圖示
 import {
   Container, TextField, Button, Typography, Box,
   ToggleButton, ToggleButtonGroup, Stack, Autocomplete,
@@ -26,24 +23,18 @@ import {
   PictureAsPdf as PictureAsPdfIcon,
   Note as MarkdownIcon
 } from '@mui/icons-material';
+import SaveIcon from '@mui/icons-material/Save';
 
-// 🧾 Markdown 解析與支援套件
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
-
-// ✏️ CodeMirror 編輯器與主題
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from '@codemirror/view';
-
-// 📄 HTML 匯出為圖片/PDF
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-
-// 📦 自訂元件
 import CodeBlock from '../components/CodeBlock';
 
 const EditNotePage = () => {
@@ -133,8 +124,8 @@ const EditNotePage = () => {
     if (!previewRef.current) return;
 
     const canvas = await html2canvas(previewRef.current, {
-      scale: 2, // 提高清晰度
-      backgroundColor: '#1e1e1e', // 預覽背景
+      scale: 2,
+      backgroundColor: '#1e1e1e',
     });
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({
@@ -253,7 +244,7 @@ const EditNotePage = () => {
         });
       }
       localStorage.removeItem(`draft_${id || 'new'}`);
-      navigate('/notes');
+      alert('儲存成功');
     } catch (err) {
       alert('儲存失敗');
       console.error(err);
@@ -418,8 +409,66 @@ const EditNotePage = () => {
           onClick={downloadPdf}
         />
       </SpeedDial>
+      <SpeedDial
+        ariaLabel="插入 Markdown 語法"
+        sx={{ position: 'fixed', left: 32, bottom:32 }}
+        icon={<SpeedDialIcon />}
+        direction="right"
+      >
+        <SpeedDialAction
+          icon={<FormatBoldIcon />}
+          tooltipTitle="粗體"
+          onClick={() => insertAtCursor('**$text**', true)}
+        />
+        <SpeedDialAction
+          icon={<FormatItalicIcon />}
+          tooltipTitle="斜體"
+          onClick={() => insertAtCursor('_$text_', true)}
+        />
+        <SpeedDialAction
+          icon={<InsertLinkIcon />}
+          tooltipTitle="連結"
+          onClick={() => insertAtCursor('[文字](https://)', true)}
+        />
+        <SpeedDialAction
+          icon={<ImageIcon />}
+          tooltipTitle="圖片"
+          onClick={() => insertAtCursor('![]()', false)}
+        />
+        <SpeedDialAction
+          icon={<CodeIcon />}
+          tooltipTitle="程式碼區塊"
+          onClick={() => insertAtCursor('```js\n$text\n```', true)}
+        />
+        <SpeedDialAction
+          icon={<FormatListBulletedIcon />}
+          tooltipTitle="清單"
+          onClick={() => insertAtCursor('- ', false)}
+        />
+        <SpeedDialAction
+          icon={<FormatQuoteIcon />}
+          tooltipTitle="引用"
+          onClick={() => insertAtCursor('> $text', true)}
+        />
+        <SpeedDialAction
+          icon={<TableChartIcon />}
+          tooltipTitle="表格"
+          onClick={() => insertAtCursor('| 標題1 | 標題2 |\n| ------ | ------ |\n| 資料1 | 資料2 |')}
+        />
+        <SpeedDialAction
+          icon={<EventIcon />}
+          tooltipTitle="插入日期"
+          onClick={() => insertAtCursor(new Date().toLocaleDateString())}
+        />
+        <SpeedDialAction
+          icon={<SaveIcon />}
+          tooltipTitle="儲存"
+          onClick={handleSave}
+        />
+      </SpeedDial>
 
     </Container>
+
   );
 };
 

@@ -12,11 +12,17 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
 
     const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(code);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
+            if (navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(code);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+            } else {
+                console.warn('不支援 clipboard API');
+                alert('此瀏覽器不支援複製功能');
+            }
         } catch (err) {
             console.error('複製失敗', err);
+            alert('複製失敗，請手動選取');
         }
     };
 
