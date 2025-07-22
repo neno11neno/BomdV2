@@ -3,10 +3,12 @@ const path = require('path');
 const cron = require('node-cron');
 const fs = require('fs');
 
+
 const BACKUP_DIR = path.join(__dirname, '..', 'backup');
 const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
 const DB_HOST = process.env.DB_HOST;
+
 
 // 確保備份資料夾存在
 if (!fs.existsSync(BACKUP_DIR)) {
@@ -17,10 +19,15 @@ const runBackup = () => {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const backupPath = path.join(BACKUP_DIR, `pg-backup-${date}.sql`);
 
-  const cmd = `pg_dump -U ${DB_USER} -h ${DB_HOST} -d ${DB_NAME} -F c -f ${backupPath}`;
+  const cmd = `pg_dump -U ${DB_USER} -h ${DB_HOST} -d ${DB_NAME} -f ${backupPath}`;
+  const env = {
+  env: process.env,
+  PGPASSWORD: process.env.DB_PASSWORD};
 
   console.log(`📦 執行備份命令：${cmd}`);
-  exec(cmd, { env: process.env }, (err) => {
+
+  
+  exec(cmd, {env}, (err) => {
     if (err) {
       console.error('❌ PostgreSQL 備份失敗:', err.message);
     } else {
