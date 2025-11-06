@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { sha256 } from 'js-sha256';
 import {
   Container, TextField, Button, Typography, Box,
   ToggleButton, ToggleButtonGroup, Stack, Autocomplete,
-  Chip, Tooltip, IconButton, SpeedDial, SpeedDialAction, SpeedDialIcon
+  Chip, Tooltip, IconButton, SpeedDial, SpeedDialAction, SpeedDialIcon, CircularProgress
 } from '@mui/material';
 
 import {
@@ -46,6 +46,7 @@ const EditNotePage = () => {
   const [content, setContent] = useState('');
   const [tags, setTags] = useState([]);
   const [allTags, setAllTags] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
   const [mode, setMode] = useState('split');
   const editorRef = useRef(null);
   const uploadedImages = useRef(new Map());
@@ -229,15 +230,27 @@ const EditNotePage = () => {
   };
 
   const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
     const token = localStorage.getItem('token');
     if (!token) return;
 
     const data = { title, content, tags };
     try {
       if (isNew) {
-        await axios.post('/api/notes', data, {
+        const res = await axios.post('/api/notes', data, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        // 如果後端回傳新筆記 id，導向該筆記，否則導回列表
+        const newId = res?.data?.id || res?.data?._id;
+        localStorage.removeItem(`draft_${id || 'new'}`);
+        alert('儲存成功');
+        if (newId) {
+          navigate(`/notes/${newId}`);
+        } else {
+          navigate('/notes');
+        }
+        return;
       } else {
         await axios.put(`/api/notes/${id}`, data, {
           headers: { Authorization: `Bearer ${token}` },
@@ -245,9 +258,12 @@ const EditNotePage = () => {
       }
       localStorage.removeItem(`draft_${id || 'new'}`);
       alert('儲存成功');
+      navigate(`/notes/${id}`);
     } catch (err) {
       alert('儲存失敗');
       console.error(err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -267,7 +283,7 @@ const EditNotePage = () => {
             <ToggleButton value="preview">預覽</ToggleButton>
             <ToggleButton value="split">編輯＋預覽</ToggleButton>
           </ToggleButtonGroup>
-          <Button variant="contained" color="success" onClick={handleSave}>💾 儲存</Button>
+          <Button variant="contained" color="success" onClick={handleSave} disabled={isSaving}>💾 儲存</Button>
         </Stack>
       </Stack>
 
@@ -368,18 +384,18 @@ const EditNotePage = () => {
                         maxWidth: '100%',
                         height: 'auto',
                         borderRadius: '4px',
-                        transition: 'transform 0.3s ease',
-                        cursor: 'zoom-in',
+                        // transition: 'transform 0.3s ease',
+                        // cursor: 'zoom-in',
                       }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.5)';
-                        e.currentTarget.style.zIndex = '10';
-                        e.currentTarget.style.position = 'relative';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.zIndex = '0';
-                      }}
+                      // onMouseOver={(e) => {
+                      //   e.currentTarget.style.transform = 'scale(1.5)';
+                      //   e.currentTarget.style.zIndex = '10';
+                      //   e.currentTarget.style.position = 'relative';
+                      // }}
+                      // onMouseOut={(e) => {
+                      //   e.currentTarget.style.transform = 'scale(1)';
+                      //   e.currentTarget.style.zIndex = '0';
+                      // }}
                       {...props}
                     />
                   ),
@@ -411,7 +427,7 @@ const EditNotePage = () => {
       </SpeedDial>
       <SpeedDial
         ariaLabel="插入 Markdown 語法"
-        sx={{ position: 'fixed', left: 32, bottom:32 }}
+        sx={{ position: 'fixed', left: 32, bottom: 32 }}
         icon={<SpeedDialIcon />}
         direction="right"
       >
@@ -464,9 +480,39 @@ const EditNotePage = () => {
           icon={<SaveIcon />}
           tooltipTitle="儲存"
           onClick={handleSave}
+          FabProps={{ disabled: isSaving }}
         />
       </SpeedDial>
 
+      <Box sx={{
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        pointerEvents: 'none',
+        zIndex: 1400,
+      }}>
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleSave}
+          disabled={isSaving}
+          startIcon={isSaving ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
+          sx={{
+            pointerEvents: 'auto',
+            minWidth: 220,
+            borderRadius: 3,
+            boxShadow: 6,
+            fontSize: 16,
+            py: 1.1,
+          }}
+        >
+          {isSaving ? '儲存中...' : '記得按我儲存'}
+        </Button>
+      </Box>
     </Container>
 
   );

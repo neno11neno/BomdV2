@@ -12,13 +12,33 @@ const CodeBlock = ({ inline, className, children, ...props }) => {
 
     const handleCopy = async () => {
         try {
+            // 優先使用 Clipboard API（通常需 HTTPS）
             if (navigator?.clipboard?.writeText) {
                 await navigator.clipboard.writeText(code);
                 setCopied(true);
                 setTimeout(() => setCopied(false), 1500);
+                return;
+            }
+
+            // Fallback：使用隱藏 textarea + execCommand('copy')，在 HTTP 下可用
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            if (successful) {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
             } else {
-                console.warn('不支援 clipboard API');
-                alert('此瀏覽器不支援複製功能');
+                throw new Error('execCommand copy failed');
             }
         } catch (err) {
             console.error('複製失敗', err);
